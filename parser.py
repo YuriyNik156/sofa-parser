@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -61,6 +62,8 @@ class DivanParser:
             self.logger.error(f"Ошибка загрузки страницы {url}: {e}")
             return
 
+        time.sleep(2)
+
         products = self.driver.find_elements(
             By.CSS_SELECTOR, "div[data-testid='product-card']"
         )
@@ -70,23 +73,20 @@ class DivanParser:
                 # Название товара
                 try:
                     name = product.find_element(
-                        By.CSS_SELECTOR, "span[itemprop='name']"
+                        By.CSS_SELECTOR, "a[data-testid='product-title']"
                     ).text
                 except NoSuchElementException:
                     try:
                         name = product.find_element(
-                            By.CSS_SELECTOR, "a[data-testid='product-title']"
-                        ).text
+                            By.CSS_SELECTOR, "span[aria-label]"
+                        ).get_attribute("aria-label")
                     except NoSuchElementException:
-                        try:
-                            name = product.find_element(By.CSS_SELECTOR, ".PJZwc").text
-                        except NoSuchElementException:
-                            name = "Без названия"
+                        name = ""
 
                 # Цена
                 try:
                     price = product.find_element(
-                        By.CLASS_NAME, "ui-LD-ZU KIkOH"
+                        By.CSS_SELECTOR, "[data-testid='price-current']"
                     ).text
                 except NoSuchElementException:
                     try:
